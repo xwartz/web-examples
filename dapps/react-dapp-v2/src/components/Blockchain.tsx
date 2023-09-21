@@ -16,9 +16,10 @@ import {
   ChainData,
 } from "../helpers";
 import { fonts } from "../styles";
+import { DEFAULT_EIP155_OPTIONAL_METHODS, TestAddChains } from "../constants"
 
 interface AccountStyleProps {
-  rgb: string;
+  rgb: string
 }
 
 const SAccount = styled.div<AccountStyleProps>`
@@ -33,7 +34,7 @@ const SAccount = styled.div<AccountStyleProps>`
   &.active {
     box-shadow: ${({ rgb }) => `0 0 8px rgb(${rgb})`};
   }
-`;
+`
 
 const SChain = styled.div`
   width: 100%;
@@ -48,7 +49,7 @@ const SChain = styled.div`
     height: 35px;
     margin-right: 10px;
   }
-`;
+`
 
 const SContainer = styled.div`
   height: 100%;
@@ -58,7 +59,7 @@ const SContainer = styled.div`
   justify-content: center;
   align-items: center;
   word-break: break-word;
-`;
+`
 
 const SFullWidthContainer = styled.div`
   width: 100%;
@@ -66,7 +67,7 @@ const SFullWidthContainer = styled.div`
   justify-content: center;
   align-items: center;
   flex-wrap: wrap;
-`;
+`
 
 const SAction = styled(Button as any)`
   border-radius: 8px;
@@ -75,42 +76,42 @@ const SAction = styled(Button as any)`
   width: 100%;
   margin: 12px 0;
   background-color: ${({ rgb }) => `rgb(${rgb})`};
-`;
+`
 
 const SBlockchainChildrenContainer = styled(SFullWidthContainer)`
   flex-direction: column;
-`;
+`
 
 interface BlockchainProps {
-  chainData: ChainNamespaces;
-  fetching?: boolean;
-  active?: boolean;
-  chainId: string;
-  address?: string;
-  onClick?: (chain: string) => void;
-  balances?: AccountBalances;
-  actions?: AccountAction[];
+  chainData: ChainNamespaces
+  fetching?: boolean
+  active?: boolean
+  chainId: string
+  address?: string
+  onClick?: (chain: string) => void
+  balances?: AccountBalances
+  actions?: AccountAction[]
 }
 
 interface BlockchainDisplayData {
-  data: ChainData;
-  meta: ChainMetadata;
+  data: ChainData
+  meta: ChainMetadata
 }
 
 function getBlockchainDisplayData(
   chainId: string,
   chainData: ChainNamespaces
 ): BlockchainDisplayData | undefined {
-  const [namespace, reference] = chainId.split(":");
-  let meta: ChainMetadata;
+  const [namespace, reference] = chainId.split(":")
+  let meta: ChainMetadata
   try {
-    meta = getChainMetadata(chainId);
+    meta = getChainMetadata(chainId)
   } catch (e) {
-    return undefined;
+    return undefined
   }
-  const data: ChainData = chainData[namespace][reference];
-  if (typeof data === "undefined") return undefined;
-  return { data, meta };
+  const data: ChainData = chainData[namespace][reference]
+  if (typeof data === "undefined") return undefined
+  return { data, meta }
 }
 
 const Blockchain: FC<PropsWithChildren<BlockchainProps>> = (
@@ -125,20 +126,20 @@ const Blockchain: FC<PropsWithChildren<BlockchainProps>> = (
     active,
     balances,
     actions,
-  } = props;
-  if (!Object.keys(chainData).length) return null;
+  } = props
+  if (!Object.keys(chainData).length) return null
 
-  const chain = getBlockchainDisplayData(chainId, chainData);
+  const chain = getBlockchainDisplayData(chainId, chainData)
 
-  if (typeof chain === "undefined") return null;
+  if (typeof chain === "undefined") return null
 
-  const name = chain.meta.name || chain.data.name;
+  const name = chain.meta.name || chain.data.name
   const account =
-    typeof address !== "undefined" ? `${chainId}:${address}` : undefined;
+    typeof address !== "undefined" ? `${chainId}:${address}` : undefined
   const assets =
     typeof account !== "undefined" && typeof balances !== "undefined"
       ? balances[account]
-      : [];
+      : []
   return (
     <React.Fragment>
       <SAccount
@@ -176,14 +177,33 @@ const Blockchain: FC<PropsWithChildren<BlockchainProps>> = (
                 <SFullWidthContainer>
                   <h6>Methods</h6>
                   {actions.map((action) => (
-                    <SAction
-                      key={action.method}
-                      left
-                      rgb={chain.meta.rgb}
-                      onClick={() => action.callback(chainId, address)}
-                    >
-                      {action.method}
-                    </SAction>
+                    <>
+                      {action.method !==
+                        DEFAULT_EIP155_OPTIONAL_METHODS.WALLET_ADD_ETHEREUM_CHAIN && (
+                        <SAction
+                          key={action.method}
+                          left
+                          rgb={chain.meta.rgb}
+                          onClick={() => action.callback(chainId, address)}
+                        >
+                          {action.method}
+                        </SAction>
+                      )}
+                      {action.method ===
+                        DEFAULT_EIP155_OPTIONAL_METHODS.WALLET_ADD_ETHEREUM_CHAIN &&
+                        TestAddChains.map((addChain) => (
+                          <SAction
+                            key={addChain.chainId}
+                            left
+                            rgb={chain.meta.rgb}
+                            onClick={() =>
+                              action.callback(chainId, addChain as any)
+                            }
+                          >
+                            addChain({addChain.chainName})
+                          </SAction>
+                        ))}
+                    </>
                   ))}
                 </SFullWidthContainer>
               ) : null}
@@ -192,6 +212,6 @@ const Blockchain: FC<PropsWithChildren<BlockchainProps>> = (
         </SBlockchainChildrenContainer>
       </SAccount>
     </React.Fragment>
-  );
-};
+  )
+}
 export default Blockchain;

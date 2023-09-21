@@ -66,6 +66,8 @@ export enum DEFAULT_EIP155_OPTIONAL_METHODS {
   ETH_SIGN = "eth_sign",
   ETH_SIGN_TYPED_DATA = "eth_signTypedData",
   ETH_SIGN_TYPED_DATA_V4 = "eth_signTypedData_v4",
+  WALLET_SWITCH_ETHEREUM_CHAIN = "wallet_switchEthereumChain",
+  WALLET_ADD_ETHEREUM_CHAIN = "wallet_addEthereumChain",
 }
 
 export enum DEFAULT_EIP_155_EVENTS {
@@ -151,12 +153,12 @@ export enum DEFAULT_TEZOS_METHODS {
 export enum DEFAULT_TEZOS_EVENTS {}
 
 export const DEFAULT_GITHUB_REPO_URL =
-  "https://github.com/WalletConnect/web-examples/tree/main/dapps/react-dapp-v2";
+  "https://github.com/WalletConnect/web-examples/tree/main/dapps/react-dapp-v2"
 
 type RelayerType = {
-  value: string | undefined;
-  label: string;
-};
+  value: string | undefined
+  label: string
+}
 
 /**
  * KADENA
@@ -187,7 +189,7 @@ export const REGIONALIZED_RELAYER_ENDPOINTS: RelayerType[] = [
     value: "wss://ap-southeast-1.relay.walletconnect.com",
     label: "Asia Pacific",
   },
-];
+]
 
 export const ORIGIN_OPTIONS = [
   {
@@ -202,4 +204,40 @@ export const ORIGIN_OPTIONS = [
     value: "unknown",
     label: "UNKNOWN",
   },
-];
+]
+
+export const TestAddChains = [
+  {
+    chainId: "0x4e454152",
+    chainName: "Aurora",
+    rpcUrls: ["https://mainnet.aurora.dev"],
+    blockExplorerUrls: ["https://explorer.mainnet.aurora.dev"],
+    nativeCurrency: {
+      symbol: "aETH",
+      decimals: 18,
+    },
+    iconUrls: [
+      "https://aws-v2-cdn.token.im/app-mainnet-production/networks/aur-bg.png",
+    ],
+  },
+  {
+    chainId: `0x${Number(789).toString(16)}`,
+    chainName: "Patex",
+    rpcUrls: ["https://rpc.patex.io"],
+    blockExplorerUrls: ["https://patexscan.io"],
+    nativeCurrency: {
+      symbol: "Ether",
+      decimals: 18,
+    },
+  },
+  {
+    chainId: `0x${Number(800).toString(16)}`,
+    chainName: "Lucid Blockchain",
+    rpcUrls: ["https://rpc.lucidcoin.io"],
+    blockExplorerUrls: ["https://explorer.lucidcoin.io"],
+    nativeCurrency: {
+      symbol: "LUCID",
+      decimals: 18,
+    },
+  },
+]

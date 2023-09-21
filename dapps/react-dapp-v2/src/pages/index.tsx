@@ -131,49 +131,61 @@ const Home: NextPage = () => {
 
   const getEthereumActions = (): AccountAction[] => {
     const actions = {
+      [DEFAULT_EIP155_OPTIONAL_METHODS.WALLET_ADD_ETHEREUM_CHAIN]: {
+        method: DEFAULT_EIP155_OPTIONAL_METHODS.WALLET_ADD_ETHEREUM_CHAIN,
+        callback: async (chainId: string, address: string) => {
+          await ethereumRpc.testAddChain(chainId, address)
+        },
+      },
+      [DEFAULT_EIP155_OPTIONAL_METHODS.WALLET_SWITCH_ETHEREUM_CHAIN]: {
+        method: DEFAULT_EIP155_OPTIONAL_METHODS.WALLET_SWITCH_ETHEREUM_CHAIN,
+        callback: async (chainId: string, address: string) => {
+          await ethereumRpc.testSwitchChain(chainId, address)
+        },
+      },
       [DEFAULT_EIP155_METHODS.ETH_SEND_TRANSACTION]: {
         method: DEFAULT_EIP155_METHODS.ETH_SEND_TRANSACTION,
         callback: async (chainId: string, address: string) => {
-          openRequestModal();
-          await ethereumRpc.testSendTransaction(chainId, address);
+          openRequestModal()
+          await ethereumRpc.testSendTransaction(chainId, address)
         },
       },
       [DEFAULT_EIP155_METHODS.PERSONAL_SIGN]: {
         method: DEFAULT_EIP155_METHODS.PERSONAL_SIGN,
         callback: async (chainId: string, address: string) => {
-          openRequestModal();
-          await ethereumRpc.testSignPersonalMessage(chainId, address);
+          openRequestModal()
+          await ethereumRpc.testSignPersonalMessage(chainId, address)
         },
       },
       [DEFAULT_EIP155_OPTIONAL_METHODS.ETH_SIGN_TRANSACTION]: {
         method: DEFAULT_EIP155_OPTIONAL_METHODS.ETH_SIGN_TRANSACTION,
         callback: async (chainId: string, address: string) => {
-          openRequestModal();
-          await ethereumRpc.testSignTransaction(chainId, address);
+          openRequestModal()
+          await ethereumRpc.testSignTransaction(chainId, address)
         },
       },
       [DEFAULT_EIP155_OPTIONAL_METHODS.ETH_SIGN]: {
         method: DEFAULT_EIP155_OPTIONAL_METHODS.ETH_SIGN + " (standard)",
         callback: async (chainId: string, address: string) => {
-          openRequestModal();
-          await ethereumRpc.testEthSign(chainId, address);
+          openRequestModal()
+          await ethereumRpc.testEthSign(chainId, address)
         },
       },
       [DEFAULT_EIP155_OPTIONAL_METHODS.ETH_SIGN_TYPED_DATA]: {
         method: DEFAULT_EIP155_OPTIONAL_METHODS.ETH_SIGN_TYPED_DATA,
         callback: async (chainId: string, address: string) => {
-          openRequestModal();
-          await ethereumRpc.testSignTypedData(chainId, address);
+          openRequestModal()
+          await ethereumRpc.testSignTypedData(chainId, address)
         },
       },
       [DEFAULT_EIP155_OPTIONAL_METHODS.ETH_SIGN_TYPED_DATA_V4]: {
         method: DEFAULT_EIP155_OPTIONAL_METHODS.ETH_SIGN_TYPED_DATA_V4,
         callback: async (chainId: string, address: string) => {
-          openRequestModal();
-          await ethereumRpc.testSignTypedDatav4(chainId, address);
+          openRequestModal()
+          await ethereumRpc.testSignTypedDatav4(chainId, address)
         },
       },
-    };
+    }
 
     let availableActions: AccountAction[] = [];
 

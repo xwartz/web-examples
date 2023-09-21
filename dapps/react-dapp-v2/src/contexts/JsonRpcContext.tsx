@@ -80,60 +80,62 @@ type TRpcRequestCallback = (
 ) => Promise<void>;
 
 interface IContext {
-  ping: () => Promise<void>;
+  ping: () => Promise<void>
   ethereumRpc: {
-    testSendTransaction: TRpcRequestCallback;
-    testSignTransaction: TRpcRequestCallback;
-    testEthSign: TRpcRequestCallback;
-    testSignPersonalMessage: TRpcRequestCallback;
-    testSignTypedData: TRpcRequestCallback;
-    testSignTypedDatav4: TRpcRequestCallback;
-  };
+    testAddChain: TRpcRequestCallback
+    testSwitchChain: TRpcRequestCallback
+    testSendTransaction: TRpcRequestCallback
+    testSignTransaction: TRpcRequestCallback
+    testEthSign: TRpcRequestCallback
+    testSignPersonalMessage: TRpcRequestCallback
+    testSignTypedData: TRpcRequestCallback
+    testSignTypedDatav4: TRpcRequestCallback
+  }
   cosmosRpc: {
-    testSignDirect: TRpcRequestCallback;
-    testSignAmino: TRpcRequestCallback;
-  };
+    testSignDirect: TRpcRequestCallback
+    testSignAmino: TRpcRequestCallback
+  }
   solanaRpc: {
-    testSignMessage: TRpcRequestCallback;
-    testSignTransaction: TRpcRequestCallback;
-  };
+    testSignMessage: TRpcRequestCallback
+    testSignTransaction: TRpcRequestCallback
+  }
   polkadotRpc: {
-    testSignMessage: TRpcRequestCallback;
-    testSignTransaction: TRpcRequestCallback;
-  };
+    testSignMessage: TRpcRequestCallback
+    testSignTransaction: TRpcRequestCallback
+  }
   nearRpc: {
-    testSignAndSendTransaction: TRpcRequestCallback;
-    testSignAndSendTransactions: TRpcRequestCallback;
-  };
+    testSignAndSendTransaction: TRpcRequestCallback
+    testSignAndSendTransactions: TRpcRequestCallback
+  }
   multiversxRpc: {
-    testSignMessage: TRpcRequestCallback;
-    testSignTransaction: TRpcRequestCallback;
-    testSignTransactions: TRpcRequestCallback;
-  };
+    testSignMessage: TRpcRequestCallback
+    testSignTransaction: TRpcRequestCallback
+    testSignTransactions: TRpcRequestCallback
+  }
   tronRpc: {
-    testSignMessage: TRpcRequestCallback;
-    testSignTransaction: TRpcRequestCallback;
-  };
+    testSignMessage: TRpcRequestCallback
+    testSignTransaction: TRpcRequestCallback
+  }
   tezosRpc: {
-    testGetAccounts: TRpcRequestCallback;
-    testSignMessage: TRpcRequestCallback;
-    testSignTransaction: TRpcRequestCallback;
-  };
+    testGetAccounts: TRpcRequestCallback
+    testSignMessage: TRpcRequestCallback
+    testSignTransaction: TRpcRequestCallback
+  }
   kadenaRpc: {
-    testGetAccounts: TRpcRequestCallback;
-    testSign: TRpcRequestCallback;
-    testQuicksign: TRpcRequestCallback;
-  };
-  rpcResult?: IFormattedRpcResponse | null;
-  isRpcRequestPending: boolean;
-  isTestnet: boolean;
-  setIsTestnet: (isTestnet: boolean) => void;
+    testGetAccounts: TRpcRequestCallback
+    testSign: TRpcRequestCallback
+    testQuicksign: TRpcRequestCallback
+  }
+  rpcResult?: IFormattedRpcResponse | null
+  isRpcRequestPending: boolean
+  isTestnet: boolean
+  setIsTestnet: (isTestnet: boolean) => void
 }
 
 /**
  * Context
  */
-export const JsonRpcContext = createContext<IContext>({} as IContext);
+export const JsonRpcContext = createContext<IContext>({} as IContext)
 
 /**
  * Provider
@@ -141,20 +143,18 @@ export const JsonRpcContext = createContext<IContext>({} as IContext);
 export function JsonRpcContextProvider({
   children,
 }: {
-  children: ReactNode | ReactNode[];
+  children: ReactNode | ReactNode[]
 }) {
-  const [pending, setPending] = useState(false);
-  const [result, setResult] = useState<IFormattedRpcResponse | null>();
-  const [isTestnet, setIsTestnet] = useState(getLocalStorageTestnetFlag());
+  const [pending, setPending] = useState(false)
+  const [result, setResult] = useState<IFormattedRpcResponse | null>()
+  const [isTestnet, setIsTestnet] = useState(getLocalStorageTestnetFlag())
 
-  const [kadenaAccount, setKadenaAccount] = useState<KadenaAccount | null>(
-    null
-  );
+  const [kadenaAccount, setKadenaAccount] = useState<KadenaAccount | null>(null)
 
   const { client, session, accounts, balances, solanaPublicKeys } =
-    useWalletConnectClient();
+    useWalletConnectClient()
 
-  const { chainData } = useChainData();
+  const { chainData } = useChainData()
 
   const _createJsonRpcRequestHandler =
     (
@@ -165,54 +165,46 @@ export function JsonRpcContextProvider({
     ) =>
     async (chainId: string, address: string) => {
       if (typeof client === "undefined") {
-        throw new Error("WalletConnect is not initialized");
+        throw new Error("WalletConnect is not initialized")
       }
       if (typeof session === "undefined") {
-        throw new Error("Session is not connected");
+        throw new Error("Session is not connected")
       }
 
       try {
-        setPending(true);
-        const result = await rpcRequest(chainId, address);
-        setResult(result);
+        setPending(true)
+        const result = await rpcRequest(chainId, address)
+        setResult(result)
       } catch (err: any) {
-        console.error("RPC request failed: ", err);
+        console.error("RPC request failed: ", err)
         setResult({
           address,
           valid: false,
           result: err?.message ?? err,
-        });
+        })
       } finally {
-        setPending(false);
+        setPending(false)
       }
-    };
-
-  const _verifyEip155MessageSignature = (
-    message: string,
-    signature: string,
-    address: string
-  ) =>
-    utils.verifyMessage(message, signature).toLowerCase() ===
-    address.toLowerCase();
+    }
 
   const ping = async () => {
     if (typeof client === "undefined") {
-      throw new Error("WalletConnect is not initialized");
+      throw new Error("WalletConnect is not initialized")
     }
     if (typeof session === "undefined") {
-      throw new Error("Session is not connected");
+      throw new Error("Session is not connected")
     }
 
     try {
-      setPending(true);
+      setPending(true)
 
-      let valid = false;
+      let valid = false
 
       try {
-        await client.ping({ topic: session.topic });
-        valid = true;
+        await client.ping({ topic: session.topic })
+        valid = true
       } catch (e) {
-        valid = false;
+        valid = false
       }
 
       // display result
@@ -220,37 +212,95 @@ export function JsonRpcContextProvider({
         method: "ping",
         valid,
         result: valid ? "Ping succeeded" : "Ping failed",
-      });
+      })
     } catch (e) {
-      console.error(e);
-      setResult(null);
+      console.error(e)
+      setResult(null)
     } finally {
-      setPending(false);
+      setPending(false)
     }
-  };
+  }
 
   // -------- ETHEREUM/EIP155 RPC METHODS --------
 
+  const testChain = {
+    chainId: "0x4e454152",
+    chainName: "Aurora",
+    rpcUrls: ["https://mainnet.aurora.dev"],
+    blockExplorerUrls: ["https://explorer.mainnet.aurora.dev"],
+    nativeCurrency: {
+      symbol: "aETH",
+      decimals: 18,
+    },
+    iconUrls: [
+      "https://aws-v2-cdn.token.im/app-mainnet-production/networks/aur-bg.png",
+    ],
+  }
+
   const ethereumRpc = {
+    testAddChain: _createJsonRpcRequestHandler(
+      async (chainId: string, chain: any) => {
+        const result = await client!.request<string>({
+          topic: session!.topic,
+          chainId,
+          request: {
+            method: DEFAULT_EIP155_OPTIONAL_METHODS.WALLET_ADD_ETHEREUM_CHAIN,
+            params: [chain],
+          },
+        })
+
+        // format displayed result
+        return {
+          method: DEFAULT_EIP155_OPTIONAL_METHODS.WALLET_ADD_ETHEREUM_CHAIN,
+          valid: true,
+          result,
+        }
+      }
+    ),
+    testSwitchChain: _createJsonRpcRequestHandler(
+      async (chainId: string, address: string) => {
+        const result = await client!.request<string>({
+          topic: session!.topic,
+          chainId,
+          request: {
+            method:
+              DEFAULT_EIP155_OPTIONAL_METHODS.WALLET_SWITCH_ETHEREUM_CHAIN,
+            params: [
+              {
+                chainId: chainId.split(":")[1],
+              },
+            ],
+          },
+        })
+
+        // format displayed result
+        return {
+          method: DEFAULT_EIP155_OPTIONAL_METHODS.WALLET_SWITCH_ETHEREUM_CHAIN,
+          address,
+          valid: true,
+          result,
+        }
+      }
+    ),
     testSendTransaction: _createJsonRpcRequestHandler(
       async (chainId: string, address: string) => {
-        const caipAccountAddress = `${chainId}:${address}`;
+        const caipAccountAddress = `${chainId}:${address}`
         const account = accounts.find(
           (account) => account === caipAccountAddress
-        );
+        )
         if (account === undefined)
-          throw new Error(`Account for ${caipAccountAddress} not found`);
+          throw new Error(`Account for ${caipAccountAddress} not found`)
 
-        const tx = await formatTestTransaction(account);
+        const tx = await formatTestTransaction(account)
 
-        const balance = BigNumber.from(balances[account][0].balance || "0");
+        const balance = BigNumber.from(balances[account][0].balance || "0")
         if (balance.lt(BigNumber.from(tx.gasPrice).mul(tx.gasLimit))) {
           return {
             method: DEFAULT_EIP155_METHODS.ETH_SEND_TRANSACTION,
             address,
             valid: false,
             result: "Insufficient funds for intrinsic transaction cost",
-          };
+          }
         }
 
         const result = await client!.request<string>({
@@ -260,7 +310,7 @@ export function JsonRpcContextProvider({
             method: DEFAULT_EIP155_METHODS.ETH_SEND_TRANSACTION,
             params: [tx],
           },
-        });
+        })
 
         // format displayed result
         return {
@@ -268,19 +318,19 @@ export function JsonRpcContextProvider({
           address,
           valid: true,
           result,
-        };
+        }
       }
     ),
     testSignTransaction: _createJsonRpcRequestHandler(
       async (chainId: string, address: string) => {
-        const caipAccountAddress = `${chainId}:${address}`;
+        const caipAccountAddress = `${chainId}:${address}`
         const account = accounts.find(
           (account) => account === caipAccountAddress
-        );
+        )
         if (account === undefined)
-          throw new Error(`Account for ${caipAccountAddress} not found`);
+          throw new Error(`Account for ${caipAccountAddress} not found`)
 
-        const tx = await formatTestTransaction(account);
+        const tx = await formatTestTransaction(account)
 
         const signedTx = await client!.request<string>({
           topic: session!.topic,
@@ -289,23 +339,23 @@ export function JsonRpcContextProvider({
             method: DEFAULT_EIP155_OPTIONAL_METHODS.ETH_SIGN_TRANSACTION,
             params: [tx],
           },
-        });
+        })
 
-        const CELO_ALFAJORES_CHAIN_ID = 44787;
-        const CELO_MAINNET_CHAIN_ID = 42220;
+        const CELO_ALFAJORES_CHAIN_ID = 44787
+        const CELO_MAINNET_CHAIN_ID = 42220
 
-        let valid = false;
-        const [, reference] = chainId.split(":");
+        let valid = false
+        const [, reference] = chainId.split(":")
         if (
           reference === CELO_ALFAJORES_CHAIN_ID.toString() ||
           reference === CELO_MAINNET_CHAIN_ID.toString()
         ) {
-          const [, signer] = recoverTransaction(signedTx);
-          valid = signer.toLowerCase() === address.toLowerCase();
+          const [, signer] = recoverTransaction(signedTx)
+          valid = signer.toLowerCase() === address.toLowerCase()
         } else {
           valid = EthTransaction.fromSerializedTx(
             signedTx as any
-          ).verifySignature();
+          ).verifySignature()
         }
 
         return {
@@ -313,18 +363,18 @@ export function JsonRpcContextProvider({
           address,
           valid,
           result: signedTx,
-        };
+        }
       }
     ),
     testSignPersonalMessage: _createJsonRpcRequestHandler(
       async (chainId: string, address: string) => {
         // test message
-        const message = `My email is john@doe.com - ${Date.now()}`;
+        const message = `My email is john@doe.com - ${Date.now()}`
 
         // encode message (hex)
-        const hexMsg = encoding.utf8ToHex(message, true);
+        const hexMsg = encoding.utf8ToHex(message, true)
         // personal_sign params
-        const params = [hexMsg, address];
+        const params = [hexMsg, address]
 
         // send message
         const signature = await client!.request<string>({
@@ -334,25 +384,25 @@ export function JsonRpcContextProvider({
             method: DEFAULT_EIP155_METHODS.PERSONAL_SIGN,
             params,
           },
-        });
+        })
 
         //  split chainId
-        const [namespace, reference] = chainId.split(":");
-        const rpc = rpcProvidersByChainId[Number(reference)];
+        const [namespace, reference] = chainId.split(":")
+        const rpc = rpcProvidersByChainId[Number(reference)]
 
         if (typeof rpc === "undefined") {
           throw new Error(
             `Missing rpcProvider definition for chainId: ${chainId}`
-          );
+          )
         }
 
-        const hashMsg = hashPersonalMessage(message);
+        const hashMsg = hashPersonalMessage(message)
         const valid = await verifySignature(
           address,
           signature,
           hashMsg,
           rpc.baseURL
-        );
+        )
 
         // format displayed result
         return {
@@ -360,17 +410,17 @@ export function JsonRpcContextProvider({
           address,
           valid,
           result: signature,
-        };
+        }
       }
     ),
     testEthSign: _createJsonRpcRequestHandler(
       async (chainId: string, address: string) => {
         // test message
-        const message = `My email is john@doe.com - ${Date.now()}`;
+        const message = `My email is john@doe.com - ${Date.now()}`
         // encode message (hex)
-        const hexMsg = encoding.utf8ToHex(message, true);
+        const hexMsg = encoding.utf8ToHex(message, true)
         // eth_sign params
-        const params = [address, hexMsg];
+        const params = [address, hexMsg]
 
         // send message
         const signature = await client!.request<string>({
@@ -380,25 +430,25 @@ export function JsonRpcContextProvider({
             method: DEFAULT_EIP155_OPTIONAL_METHODS.ETH_SIGN,
             params,
           },
-        });
+        })
 
         //  split chainId
-        const [namespace, reference] = chainId.split(":");
-        const rpc = rpcProvidersByChainId[Number(reference)];
+        const [namespace, reference] = chainId.split(":")
+        const rpc = rpcProvidersByChainId[Number(reference)]
 
         if (typeof rpc === "undefined") {
           throw new Error(
             `Missing rpcProvider definition for chainId: ${chainId}`
-          );
+          )
         }
 
-        const hashMsg = hashPersonalMessage(message);
+        const hashMsg = hashPersonalMessage(message)
         const valid = await verifySignature(
           address,
           signature,
           hashMsg,
           rpc.baseURL
-        );
+        )
 
         // format displayed result
         return {
@@ -406,15 +456,15 @@ export function JsonRpcContextProvider({
           address,
           valid,
           result: signature,
-        };
+        }
       }
     ),
     testSignTypedData: _createJsonRpcRequestHandler(
       async (chainId: string, address: string) => {
-        const message = JSON.stringify(eip712.example);
+        const message = JSON.stringify(eip712.example)
 
         // eth_signTypedData params
-        const params = [address, message];
+        const params = [address, message]
 
         // send message
         const signature = await client!.request<string>({
@@ -424,41 +474,41 @@ export function JsonRpcContextProvider({
             method: DEFAULT_EIP155_OPTIONAL_METHODS.ETH_SIGN_TYPED_DATA,
             params,
           },
-        });
+        })
 
         //  split chainId
-        const [namespace, reference] = chainId.split(":");
-        const rpc = rpcProvidersByChainId[Number(reference)];
+        const [namespace, reference] = chainId.split(":")
+        const rpc = rpcProvidersByChainId[Number(reference)]
 
         if (typeof rpc === "undefined") {
           throw new Error(
             `Missing rpcProvider definition for chainId: ${chainId}`
-          );
+          )
         }
 
-        const hashedTypedData = hashTypedDataMessage(message);
+        const hashedTypedData = hashTypedDataMessage(message)
         const valid = await verifySignature(
           address,
           signature,
           hashedTypedData,
           rpc.baseURL
-        );
+        )
 
         return {
           method: DEFAULT_EIP155_OPTIONAL_METHODS.ETH_SIGN_TYPED_DATA,
           address,
           valid,
           result: signature,
-        };
+        }
       }
     ),
     testSignTypedDatav4: _createJsonRpcRequestHandler(
       async (chainId: string, address: string) => {
-        const message = JSON.stringify(eip712.example);
-        console.log("eth_signTypedData_v4");
+        const message = JSON.stringify(eip712.example)
+        console.log("eth_signTypedData_v4")
 
         // eth_signTypedData_v4 params
-        const params = [address, message];
+        const params = [address, message]
 
         // send message
         const signature = await client!.request<string>({
@@ -468,35 +518,35 @@ export function JsonRpcContextProvider({
             method: DEFAULT_EIP155_OPTIONAL_METHODS.ETH_SIGN_TYPED_DATA_V4,
             params,
           },
-        });
+        })
 
         //  split chainId
-        const [namespace, reference] = chainId.split(":");
-        const rpc = rpcProvidersByChainId[Number(reference)];
+        const [namespace, reference] = chainId.split(":")
+        const rpc = rpcProvidersByChainId[Number(reference)]
 
         if (typeof rpc === "undefined") {
           throw new Error(
             `Missing rpcProvider definition for chainId: ${chainId}`
-          );
+          )
         }
 
-        const hashedTypedData = hashTypedDataMessage(message);
+        const hashedTypedData = hashTypedDataMessage(message)
         const valid = await verifySignature(
           address,
           signature,
           hashedTypedData,
           rpc.baseURL
-        );
+        )
 
         return {
           method: DEFAULT_EIP155_OPTIONAL_METHODS.ETH_SIGN_TYPED_DATA,
           address,
           valid,
           result: signature,
-        };
+        }
       }
     ),
-  };
+  }
 
   // -------- COSMOS RPC METHODS --------
 
@@ -514,10 +564,10 @@ export function JsonRpcContextProvider({
             "0a90010a1c2f636f736d6f732e62616e6b2e763162657461312e4d736753656e6412700a2d636f736d6f7331706b707472653766646b6c366766727a6c65736a6a766878686c63337234676d6d6b38727336122d636f736d6f7331717970717870713971637273737a673270767871367273307a716733797963356c7a763778751a100a0575636f736d120731323334353637",
           authInfoBytes:
             "0a500a460a1f2f636f736d6f732e63727970746f2e736563703235366b312e5075624b657912230a21034f04181eeba35391b858633a765c4a0c189697b40d216354d50890d350c7029012040a020801180112130a0d0a0575636f736d12043230303010c09a0c",
-        };
+        }
 
         // split chainId
-        const [namespace, reference] = chainId.split(":");
+        const [namespace, reference] = chainId.split(":")
 
         // format sign doc
         const signDoc = formatDirectSignDoc(
@@ -528,13 +578,13 @@ export function JsonRpcContextProvider({
           inputs.sequence,
           inputs.bodyBytes,
           reference
-        );
+        )
 
         // cosmos_signDirect params
         const params = {
           signerAddress: address,
           signDoc: stringifySignDocValues(signDoc),
-        };
+        }
 
         // send message
         const result = await client!.request<{ signature: string }>({
@@ -544,19 +594,19 @@ export function JsonRpcContextProvider({
             method: DEFAULT_COSMOS_METHODS.COSMOS_SIGN_DIRECT,
             params,
           },
-        });
+        })
 
-        const targetChainData = chainData[namespace][reference];
+        const targetChainData = chainData[namespace][reference]
 
         if (typeof targetChainData === "undefined") {
-          throw new Error(`Missing chain data for chainId: ${chainId}`);
+          throw new Error(`Missing chain data for chainId: ${chainId}`)
         }
 
         const valid = await verifyDirectSignature(
           address,
           result.signature,
           signDoc
-        );
+        )
 
         // format displayed result
         return {
@@ -564,13 +614,13 @@ export function JsonRpcContextProvider({
           address,
           valid,
           result: result.signature,
-        };
+        }
       }
     ),
     testSignAmino: _createJsonRpcRequestHandler(
       async (chainId: string, address: string) => {
         // split chainId
-        const [namespace, reference] = chainId.split(":");
+        const [namespace, reference] = chainId.split(":")
 
         // test amino sign doc
         const signDoc = {
@@ -580,10 +630,10 @@ export function JsonRpcContextProvider({
           memo: "hello, world",
           account_number: "7",
           sequence: "54",
-        };
+        }
 
         // cosmos_signAmino params
-        const params = { signerAddress: address, signDoc };
+        const params = { signerAddress: address, signDoc }
 
         // send message
         const result = await client!.request<{ signature: string }>({
@@ -593,19 +643,19 @@ export function JsonRpcContextProvider({
             method: DEFAULT_COSMOS_METHODS.COSMOS_SIGN_AMINO,
             params,
           },
-        });
+        })
 
-        const targetChainData = chainData[namespace][reference];
+        const targetChainData = chainData[namespace][reference]
 
         if (typeof targetChainData === "undefined") {
-          throw new Error(`Missing chain data for chainId: ${chainId}`);
+          throw new Error(`Missing chain data for chainId: ${chainId}`)
         }
 
         const valid = await verifyAminoSignature(
           address,
           result.signature,
           signDoc
-        );
+        )
 
         // format displayed result
         return {
@@ -613,10 +663,10 @@ export function JsonRpcContextProvider({
           address,
           valid,
           result: result.signature,
-        };
+        }
       }
     ),
-  };
+  }
 
   // -------- SOLANA RPC METHODS --------
 
@@ -627,19 +677,19 @@ export function JsonRpcContextProvider({
         address: string
       ): Promise<IFormattedRpcResponse> => {
         if (!solanaPublicKeys) {
-          throw new Error("Could not find Solana PublicKeys.");
+          throw new Error("Could not find Solana PublicKeys.")
         }
 
-        const senderPublicKey = solanaPublicKeys[address];
+        const senderPublicKey = solanaPublicKeys[address]
 
         // rpc.walletconnect.com doesn't support solana testnet yet
         const connection = new Connection(
           isTestnet ? clusterApiUrl("testnet") : getProviderUrl(chainId)
-        );
+        )
 
         // Using deprecated `getRecentBlockhash` over `getLatestBlockhash` here, since `mainnet-beta`
         // cluster only seems to support `connection.getRecentBlockhash` currently.
-        const { blockhash } = await connection.getRecentBlockhash();
+        const { blockhash } = await connection.getRecentBlockhash()
 
         const transaction = new SolanaTransaction({
           feePayer: senderPublicKey,
@@ -650,7 +700,7 @@ export function JsonRpcContextProvider({
             toPubkey: Keypair.generate().publicKey,
             lamports: 1,
           })
-        );
+        )
 
         try {
           const result = await client!.request<{ signature: string }>({
@@ -672,25 +722,25 @@ export function JsonRpcContextProvider({
                 })),
               },
             },
-          });
+          })
 
           // We only need `Buffer.from` here to satisfy the `Buffer` param type for `addSignature`.
           // The resulting `UInt8Array` is equivalent to just `bs58.decode(...)`.
           transaction.addSignature(
             senderPublicKey,
             Buffer.from(bs58.decode(result.signature))
-          );
+          )
 
-          const valid = transaction.verifySignatures();
+          const valid = transaction.verifySignatures()
 
           return {
             method: DEFAULT_SOLANA_METHODS.SOL_SIGN_TRANSACTION,
             address,
             valid,
             result: result.signature,
-          };
+          }
         } catch (error: any) {
-          throw new Error(error);
+          throw new Error(error)
         }
       }
     ),
@@ -700,17 +750,17 @@ export function JsonRpcContextProvider({
         address: string
       ): Promise<IFormattedRpcResponse> => {
         if (!solanaPublicKeys) {
-          throw new Error("Could not find Solana PublicKeys.");
+          throw new Error("Could not find Solana PublicKeys.")
         }
 
-        const senderPublicKey = solanaPublicKeys[address];
+        const senderPublicKey = solanaPublicKeys[address]
 
         // Encode message to `UInt8Array` first via `TextEncoder` so we can pass it to `bs58.encode`.
         const message = bs58.encode(
           new TextEncoder().encode(
             `This is an example message to be signed - ${Date.now()}`
           )
-        );
+        )
 
         try {
           const result = await client!.request<{ signature: string }>({
@@ -723,26 +773,26 @@ export function JsonRpcContextProvider({
                 message,
               },
             },
-          });
+          })
 
           const valid = verifyMessageSignature(
             senderPublicKey.toBase58(),
             result.signature,
             message
-          );
+          )
 
           return {
             method: DEFAULT_SOLANA_METHODS.SOL_SIGN_MESSAGE,
             address,
             valid,
             result: result.signature,
-          };
+          }
         } catch (error: any) {
-          throw new Error(error);
+          throw new Error(error)
         }
       }
     ),
-  };
+  }
 
   // -------- POLKADOT RPC METHODS --------
   const polkadotRpc = {
@@ -776,12 +826,12 @@ export function JsonRpcContextProvider({
           ],
           tip: "0x00000000000000000000000000000000",
           version: 4,
-        };
+        }
 
         try {
           const result = await client!.request<{
-            payload: string;
-            signature: string;
+            payload: string
+            signature: string
           }>({
             chainId,
             topic: session!.topic,
@@ -792,16 +842,16 @@ export function JsonRpcContextProvider({
                 transactionPayload,
               },
             },
-          });
+          })
 
           return {
             method: DEFAULT_POLKADOT_METHODS.POLKADOT_SIGN_TRANSACTION,
             address,
             valid: true,
             result: result.signature,
-          };
+          }
         } catch (error: any) {
-          throw new Error(error);
+          throw new Error(error)
         }
       }
     ),
@@ -810,7 +860,7 @@ export function JsonRpcContextProvider({
         chainId: string,
         address: string
       ): Promise<IFormattedRpcResponse> => {
-        const message = `This is an example message to be signed - ${Date.now()}`;
+        const message = `This is an example message to be signed - ${Date.now()}`
 
         try {
           const result = await client!.request<{ signature: string }>({
@@ -823,28 +873,28 @@ export function JsonRpcContextProvider({
                 message,
               },
             },
-          });
+          })
 
           // sr25519 signatures need to wait for WASM to load
-          await cryptoWaitReady();
+          await cryptoWaitReady()
           const { isValid: valid } = signatureVerify(
             message,
             result.signature,
             address
-          );
+          )
 
           return {
             method: DEFAULT_POLKADOT_METHODS.POLKADOT_SIGN_MESSAGE,
             address,
             valid,
             result: result.signature,
-          };
+          }
         } catch (error: any) {
-          throw new Error(error);
+          throw new Error(error)
         }
       }
     ),
-  };
+  }
 
   // -------- NEAR RPC METHODS --------
 
@@ -854,7 +904,7 @@ export function JsonRpcContextProvider({
         chainId: string,
         address: string
       ): Promise<IFormattedRpcResponse> => {
-        const method = DEFAULT_NEAR_METHODS.NEAR_SIGN_AND_SEND_TRANSACTION;
+        const method = DEFAULT_NEAR_METHODS.NEAR_SIGN_AND_SEND_TRANSACTION
         const result = await client!.request({
           topic: session!.topic,
           chainId,
@@ -878,14 +928,14 @@ export function JsonRpcContextProvider({
               },
             },
           },
-        });
+        })
 
         return {
           method,
           address,
           valid: true,
           result: JSON.stringify((result as any).transaction),
-        };
+        }
       }
     ),
     testSignAndSendTransactions: _createJsonRpcRequestHandler(
@@ -893,7 +943,7 @@ export function JsonRpcContextProvider({
         chainId: string,
         address: string
       ): Promise<IFormattedRpcResponse> => {
-        const method = DEFAULT_NEAR_METHODS.NEAR_SIGN_AND_SEND_TRANSACTIONS;
+        const method = DEFAULT_NEAR_METHODS.NEAR_SIGN_AND_SEND_TRANSACTIONS
         const result = await client!.request({
           topic: session!.topic,
           chainId,
@@ -934,7 +984,7 @@ export function JsonRpcContextProvider({
               ],
             },
           },
-        });
+        })
 
         return {
           method,
@@ -943,10 +993,10 @@ export function JsonRpcContextProvider({
           result: JSON.stringify(
             (result as any).map((r: any) => r.transaction)
           ),
-        };
+        }
       }
     ),
-  };
+  }
 
   // -------- MULTIVERSX RPC METHODS --------
 
@@ -956,11 +1006,11 @@ export function JsonRpcContextProvider({
         chainId: string,
         address: string
       ): Promise<IFormattedRpcResponse> => {
-        const reference = chainId.split(":")[1];
+        const reference = chainId.split(":")[1]
 
-        const userAddress = new Address(address);
-        const verifier = UserVerifier.fromAddress(userAddress);
-        const transactionPayload = new TransactionPayload("testdata");
+        const userAddress = new Address(address)
+        const verifier = UserVerifier.fromAddress(userAddress)
+        const transactionPayload = new TransactionPayload("testdata")
 
         const testTransaction = new MultiversxTransaction({
           nonce: 1,
@@ -971,8 +1021,8 @@ export function JsonRpcContextProvider({
           gasLimit: 50000,
           chainID: reference,
           data: transactionPayload,
-        });
-        const transaction = testTransaction.toPlainObject();
+        })
+        const transaction = testTransaction.toPlainObject()
 
         try {
           const result = await client!.request<{ signature: string }>({
@@ -984,21 +1034,21 @@ export function JsonRpcContextProvider({
                 transaction,
               },
             },
-          });
+          })
 
           const valid = verifier.verify(
             testTransaction.serializeForSigning(),
             Buffer.from(result.signature, "hex")
-          );
+          )
 
           return {
             method: DEFAULT_MULTIVERSX_METHODS.MULTIVERSX_SIGN_TRANSACTION,
             address,
             valid,
             result: result.signature.toString(),
-          };
+          }
         } catch (error: any) {
-          throw new Error(error);
+          throw new Error(error)
         }
       }
     ),
@@ -1007,11 +1057,11 @@ export function JsonRpcContextProvider({
         chainId: string,
         address: string
       ): Promise<IFormattedRpcResponse> => {
-        const reference = chainId.split(":")[1];
+        const reference = chainId.split(":")[1]
 
-        const userAddress = new Address(address);
-        const verifier = UserVerifier.fromAddress(userAddress);
-        const testTransactionPayload = new TransactionPayload("testdata");
+        const userAddress = new Address(address)
+        const verifier = UserVerifier.fromAddress(userAddress)
+        const testTransactionPayload = new TransactionPayload("testdata")
 
         const testTransaction = new MultiversxTransaction({
           nonce: 1,
@@ -1022,7 +1072,7 @@ export function JsonRpcContextProvider({
           gasLimit: 50000,
           chainID: reference,
           data: testTransactionPayload,
-        });
+        })
 
         // no data for this Transaction
         const testTransaction2 = new MultiversxTransaction({
@@ -1033,9 +1083,9 @@ export function JsonRpcContextProvider({
           gasPrice: 1000000000,
           gasLimit: 50000,
           chainID: reference,
-        });
+        })
 
-        const testTransaction3Payload = new TransactionPayload("third");
+        const testTransaction3Payload = new TransactionPayload("third")
         const testTransaction3 = new MultiversxTransaction({
           nonce: 3,
           value: "300000000000000000",
@@ -1045,17 +1095,17 @@ export function JsonRpcContextProvider({
           gasLimit: 50000,
           chainID: reference,
           data: testTransaction3Payload,
-        });
+        })
 
         const transactions = [
           testTransaction,
           testTransaction2,
           testTransaction3,
-        ].map((transaction) => transaction.toPlainObject());
+        ].map((transaction) => transaction.toPlainObject())
 
         try {
           const result = await client!.request<{
-            signatures: { signature: string }[];
+            signatures: { signature: string }[]
           }>({
             chainId,
             topic: session!.topic,
@@ -1065,7 +1115,7 @@ export function JsonRpcContextProvider({
                 transactions,
               },
             },
-          });
+          })
 
           const valid = [
             testTransaction,
@@ -1078,21 +1128,21 @@ export function JsonRpcContextProvider({
                 current.serializeForSigning(),
                 Buffer.from(result.signatures[index].signature, "hex")
               )
-            );
-          }, true);
+            )
+          }, true)
 
           const resultSignatures = result.signatures.map(
             (signature: any) => signature.signature
-          );
+          )
 
           return {
             method: DEFAULT_MULTIVERSX_METHODS.MULTIVERSX_SIGN_TRANSACTIONS,
             address,
             valid,
             result: resultSignatures.join(", "),
-          };
+          }
         } catch (error: any) {
-          throw new Error(error);
+          throw new Error(error)
         }
       }
     ),
@@ -1101,13 +1151,13 @@ export function JsonRpcContextProvider({
         chainId: string,
         address: string
       ): Promise<IFormattedRpcResponse> => {
-        const userAddress = new Address(address);
-        const verifier = UserVerifier.fromAddress(userAddress);
+        const userAddress = new Address(address)
+        const verifier = UserVerifier.fromAddress(userAddress)
 
         const testMessage = new SignableMessage({
           address: userAddress,
           message: Buffer.from(`Sign this message - ${Date.now()}`, "ascii"),
-        });
+        })
 
         try {
           const result = await client!.request<{ signature: string }>({
@@ -1120,25 +1170,25 @@ export function JsonRpcContextProvider({
                 message: testMessage.message.toString(),
               },
             },
-          });
+          })
 
           const valid = verifier.verify(
             testMessage.serializeForSigning(),
             Buffer.from(result.signature, "hex")
-          );
+          )
 
           return {
             method: DEFAULT_MULTIVERSX_METHODS.MULTIVERSX_SIGN_MESSAGE,
             address,
             valid,
             result: result.signature.toString(),
-          };
+          }
         } catch (error: any) {
-          throw new Error(error);
+          throw new Error(error)
         }
       }
     ),
-  };
+  }
 
   // -------- TRON RPC METHODS --------
 
@@ -1151,11 +1201,11 @@ export function JsonRpcContextProvider({
         // Nile TestNet, if you want to use in MainNet, change the fullHost to 'https://api.trongrid.io'
         const fullHost = isTestnet
           ? "https://nile.trongrid.io/"
-          : "https://api.trongrid.io/";
+          : "https://api.trongrid.io/"
 
         const tronWeb = new TronWeb({
           fullHost,
-        });
+        })
 
         // Take USDT as an example:
         // Nile TestNet: https://nile.tronscan.org/#/token20/TXYZopYRdj2D9XRtbG411XZZ3kM5VkAeBf
@@ -1163,7 +1213,7 @@ export function JsonRpcContextProvider({
 
         const testContract = isTestnet
           ? "TXYZopYRdj2D9XRtbG411XZZ3kM5VkAeBf"
-          : "TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t";
+          : "TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t"
         const testTransaction =
           await tronWeb.transactionBuilder.triggerSmartContract(
             testContract,
@@ -1174,7 +1224,7 @@ export function JsonRpcContextProvider({
               { type: "uint256", value: 0 },
             ],
             address
-          );
+          )
 
         try {
           const { result } = await client!.request<{ result: any }>({
@@ -1189,16 +1239,16 @@ export function JsonRpcContextProvider({
                 },
               },
             },
-          });
+          })
 
           return {
             method: DEFAULT_TRON_METHODS.TRON_SIGN_TRANSACTION,
             address,
             valid: true,
             result: result.signature,
-          };
+          }
         } catch (error: any) {
-          throw new Error(error);
+          throw new Error(error)
         }
       }
     ),
@@ -1207,7 +1257,7 @@ export function JsonRpcContextProvider({
         chainId: string,
         address: string
       ): Promise<IFormattedRpcResponse> => {
-        const message = "This is a message to be signed for Tron";
+        const message = "This is a message to be signed for Tron"
 
         try {
           const result = await client!.request<{ signature: string }>({
@@ -1220,20 +1270,20 @@ export function JsonRpcContextProvider({
                 message,
               },
             },
-          });
+          })
 
           return {
             method: DEFAULT_TRON_METHODS.TRON_SIGN_MESSAGE,
             address,
             valid: true,
             result: result.signature,
-          };
+          }
         } catch (error: any) {
-          throw new Error(error);
+          throw new Error(error)
         }
       }
     ),
-  };
+  }
 
   // -------- TEZOS RPC METHODS --------
 
@@ -1251,16 +1301,16 @@ export function JsonRpcContextProvider({
               method: DEFAULT_TEZOS_METHODS.TEZOS_GET_ACCOUNTS,
               params: {},
             },
-          });
+          })
 
           return {
             method: DEFAULT_TEZOS_METHODS.TEZOS_GET_ACCOUNTS,
             address,
             valid: true,
             result: JSON.stringify(result, null, 2),
-          };
+          }
         } catch (error: any) {
-          throw new Error(error.message);
+          throw new Error(error.message)
         }
       }
     ),
@@ -1286,16 +1336,16 @@ export function JsonRpcContextProvider({
                 ],
               },
             },
-          });
+          })
 
           return {
             method: DEFAULT_TEZOS_METHODS.TEZOS_SEND,
             address,
             valid: true,
             result: result.hash,
-          };
+          }
         } catch (error: any) {
-          throw new Error(error.message);
+          throw new Error(error.message)
         }
       }
     ),
@@ -1304,7 +1354,7 @@ export function JsonRpcContextProvider({
         chainId: string,
         address: string
       ): Promise<IFormattedRpcResponse> => {
-        const payload = "05010000004254";
+        const payload = "05010000004254"
 
         try {
           const result = await client!.request<{ signature: string }>({
@@ -1317,20 +1367,20 @@ export function JsonRpcContextProvider({
                 payload,
               },
             },
-          });
+          })
 
           return {
             method: DEFAULT_TEZOS_METHODS.TEZOS_SIGN,
             address,
             valid: true,
             result: result.signature,
-          };
+          }
         } catch (error: any) {
-          throw new Error(error.message);
+          throw new Error(error.message)
         }
       }
     ),
-  };
+  }
 
   // -------- KADENA RPC METHODS --------
 
@@ -1340,7 +1390,7 @@ export function JsonRpcContextProvider({
         WCNetworkId: string,
         publicKey: string
       ): Promise<IFormattedRpcResponse> => {
-        const method = DEFAULT_KADENA_METHODS.KADENA_GET_ACCOUNTS;
+        const method = DEFAULT_KADENA_METHODS.KADENA_GET_ACCOUNTS
 
         const result = await client!.request<any>({
           topic: session!.topic,
@@ -1352,24 +1402,24 @@ export function JsonRpcContextProvider({
               contracts: ["coin"],
             },
           },
-        });
+        })
 
         // In a real app you would let the user pick which account they want to use. For this example we'll just set it to the first one.
-        const [firstAccount] = result.accounts;
+        const [firstAccount] = result.accounts
 
         // The information below will later be used to create a transaction
         setKadenaAccount({
           publicKey: firstAccount.publicKey, // Kadena public key
           account: firstAccount.kadenaAccounts[0].name, // Kadena account
           chainId: firstAccount.kadenaAccounts[0].chains[0], // Kadena ChainId
-        });
+        })
 
         return {
           method,
           address: publicKey,
           valid: true,
           result: JSON.stringify(result, null, 2),
-        };
+        }
       }
     ),
     testSign: _createJsonRpcRequestHandler(
@@ -1377,21 +1427,21 @@ export function JsonRpcContextProvider({
         WCNetworkId: string,
         publicKey: string
       ): Promise<IFormattedRpcResponse> => {
-        const method = DEFAULT_KADENA_METHODS.KADENA_SIGN;
-        const [_, networkId] = WCNetworkId.split(":");
+        const method = DEFAULT_KADENA_METHODS.KADENA_SIGN
+        const [_, networkId] = WCNetworkId.split(":")
 
         if (!kadenaAccount) {
-          throw new Error("No Kadena account selected. Call getAccounts first");
+          throw new Error("No Kadena account selected. Call getAccounts first")
         }
 
         if (!client) {
-          throw new Error("No client found");
+          throw new Error("No client found")
         }
 
-        const pactCommand = new PactCommand();
+        const pactCommand = new PactCommand()
         pactCommand.code = `(coin.transfer "${
           kadenaAccount.account
-        }" "k:abcabcabcabc" ${new PactNumber(1).toDecimal()})`;
+        }" "k:abcabcabcabc" ${new PactNumber(1).toDecimal()})`
 
         pactCommand
           .setMeta(
@@ -1411,22 +1461,22 @@ export function JsonRpcContextProvider({
             kadenaAccount.account, // account of sender
             "k:abcabcabcabc", // account of receiver
             { decimal: `1` } // amount
-          );
+          )
 
         const signWithWalletConnect = createWalletConnectSign(
           client as any,
           session as any,
           WCNetworkId as any
-        );
+        )
 
-        const result = await signWithWalletConnect(pactCommand);
+        const result = await signWithWalletConnect(pactCommand)
 
         return {
           method,
           address: kadenaAccount.publicKey,
           valid: true,
           result: JSON.stringify(result, null, 2),
-        };
+        }
       }
     ),
     testQuicksign: _createJsonRpcRequestHandler(
@@ -1434,17 +1484,17 @@ export function JsonRpcContextProvider({
         WCNetworkId: string,
         publicKey: string
       ): Promise<IFormattedRpcResponse> => {
-        const method = DEFAULT_KADENA_METHODS.KADENA_QUICKSIGN;
-        const [_, networkId] = WCNetworkId.split(":");
+        const method = DEFAULT_KADENA_METHODS.KADENA_QUICKSIGN
+        const [_, networkId] = WCNetworkId.split(":")
 
         if (!kadenaAccount) {
-          throw new Error("No Kadena account selected. Call getAccounts first");
+          throw new Error("No Kadena account selected. Call getAccounts first")
         }
 
-        const pactCommand = new PactCommand();
+        const pactCommand = new PactCommand()
         pactCommand.code = `(coin.transfer "${
           kadenaAccount.account
-        }" "k:abcabcabcabc" ${new PactNumber(1).toDecimal()})`;
+        }" "k:abcabcabcabc" ${new PactNumber(1).toDecimal()})`
 
         pactCommand
           .setMeta(
@@ -1464,25 +1514,25 @@ export function JsonRpcContextProvider({
             kadenaAccount.account, // account of sender
             "k:abcabcabcabc", // account of receiver
             { decimal: `1` } // amount
-          );
+          )
 
         const quicksignWithWalletConnect = createWalletConnectQuicksign(
           client as any,
           session as any,
           WCNetworkId as any
-        );
+        )
 
-        const result = await quicksignWithWalletConnect(pactCommand);
+        const result = await quicksignWithWalletConnect(pactCommand)
 
         return {
           method,
           address: publicKey,
           valid: true,
           result: JSON.stringify(result, null, 2),
-        };
+        }
       }
     ),
-  };
+  }
 
   return (
     <JsonRpcContext.Provider
@@ -1505,7 +1555,7 @@ export function JsonRpcContextProvider({
     >
       {children}
     </JsonRpcContext.Provider>
-  );
+  )
 }
 
 export function useJsonRpc() {
